@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  nut-exporter:
+  - apiVersion: v1
+    appVersion: "3.1"
+    created: "2024-03-19T01:37:50.69700929Z"
+    description: Installs NUT exporter in kubernetes
+    digest: db7066beeb3263e1518e4969769d9c6e80f23c905bd897e9de5d2f89b604a763
+    name: nut-exporter
+    sources:
+    - https://github.com/DRuggeri/nut_exporter
+    urls:
+    - https://github.com/ConnorsApps/nut_exporter/releases/download/helm-nut-exporter-1.0.0/nut-exporter-1.0.0.tgz
+    version: 1.0.0
+generated: "2024-03-19T01:37:50.697018297Z"
