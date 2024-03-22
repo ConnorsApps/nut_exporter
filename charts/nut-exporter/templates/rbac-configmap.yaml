@@ -1,0 +1,14 @@
+{{- if .Values.kubeRBACProxy.enabled}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "nut-exporter.fullname" . }}-rbac-config
+data:
+  config-file.yaml: |+
+    authorization:
+      resourceAttributes:
+        apiVersion: v1
+        resource: services
+        subresource: {{ template "nut-exporter.fullname" . }}
+        name: {{ template "nut-exporter.fullname" . }}
+{{- end }}
