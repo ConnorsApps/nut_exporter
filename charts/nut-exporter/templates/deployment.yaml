@@ -21,11 +21,13 @@ spec:
       {{- if .Values.kubeRBACProxy.enabled }}
       automountServiceAccountToken: true
       {{- end }}
+      serviceAccountName: {{ include "nut-exporter.fullname" . }}
       hostNetwork: {{ .Values.podHostNetwork }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        {{- $servicePort := ternary .Values.kubeRBACProxy.port .Values.service.port .Values.kubeRBACProxy.enabled }}
+        {{- $rbacProxyPort := .Values.kubeRBACProxy.proxyEndpointsPort }}
+        {{- $servicePort := .Values.service.port }}
         - name: nut-exporter
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -62,7 +64,7 @@ spec:
             {{-  if .Values.kubeRBACProxy.extraArgs  }}
             {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}
             {{-  end  }}
-            - --secure-listen-address=:{{ .Values.service.port}}
+            - --secure-listen-address=:{{ $rbacProxyPort }}
             - --upstream=http://127.0.0.1:{{ $servicePort }}/
             - --proxy-endpoints-port={{ .Values.kubeRBACProxy.proxyEndpointsPort }}
             - --config-file=/etc/kube-rbac-proxy-config/config-file.yaml
@@ -71,15 +73,15 @@ spec:
               mountPath: /etc/kube-rbac-proxy-config
           imagePullPolicy: {{ .Values.kubeRBACProxy.image.pullPolicy }}
           {{- if .Values.kubeRBACProxy.image.sha }}
-          image: "{{ .Values.global.imageRegistry | default .Values.kubeRBACProxy.image.registry}}/{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}@sha256:{{ .Values.kubeRBACProxy.image.sha }}"
+          image: "{{ .Values.kubeRBACProxy.image.registry}}/{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}@sha256:{{ .Values.kubeRBACProxy.image.sha }}"
           {{- else }}
-          image: "{{ .Values.global.imageRegistry | default .Values.kubeRBACProxy.image.registry}}/{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
+          image: "{{ .Values.kubeRBACProxy.image.registry}}/{{ .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
           {{- end }}
           ports:
-            - containerPort: {{ .Values.service.port}}
+            - containerPort: {{ $rbacProxyPort }}
               name: {{ .Values.kubeRBACProxy.portName }}
               {{- if .Values.kubeRBACProxy.enableHostPort }}
-              hostPort: {{ .Values.service.port }}
+              hostPort: {{ $rbacProxyPort }}
               {{- end }}
             - containerPort: {{ .Values.kubeRBACProxy.proxyEndpointsPort }}
               {{- if .Values.kubeRBACProxy.enableProxyEndpointsHostPort }}
@@ -96,12 +98,6 @@ spec:
           {{- if .Values.kubeRBACProxy.resources }}
           resources:
           {{- toYaml .Values.kubeRBACProxy.resources | nindent 12 }}
-          {{- end }}
-          {{- if .Values.terminationMessageParams.enabled }}
-          {{- with .Values.terminationMessageParams }}
-          terminationMessagePath: {{ .terminationMessagePath }}
-          terminationMessagePolicy: {{ .terminationMessagePolicy }}
-          {{- end }}
           {{- end }}
           {{- with .Values.kubeRBACProxy.env }}
           env:

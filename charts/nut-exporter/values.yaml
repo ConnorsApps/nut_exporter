@@ -87,7 +87,7 @@ kubeRBACProxy:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext: {}
 
-  # Specify the port used for the Node exporter container (upstream port)
+  # Specify the port used for the nut exporter container (upstream port)
   port: 9199
   # Specify the name of the container port
   portName: http
@@ -215,3 +215,5 @@ rules:
       labels:
         severity: warning
 
+serviceAccount:
+  annotations: {}
